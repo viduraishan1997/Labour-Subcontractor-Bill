@@ -107,6 +107,7 @@ report 50100 "Labor Subcontractor Report"
             {
             }
             //...................Deductions......................................//
+            //...Chnages Done.....
         }
     }
 
