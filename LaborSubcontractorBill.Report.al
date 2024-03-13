@@ -1,4 +1,4 @@
-report 50100 "Labor Subcontractor Report"
+report 50100 "Labour Subcontractor Report"
 {
     UsageCategory = ReportsAndAnalysis;
     ApplicationArea = All;
@@ -10,6 +10,15 @@ report 50100 "Labor Subcontractor Report"
         {
             RequestFilterFields = "Authority Number", "No.", "Job No.";
             column(CompanyName; COMPANYPROPERTY.DisplayName())
+            {
+            }
+            column(ProJect; JobSubContractorDescription)
+            {
+            }
+            column(Contract; ContractDescription)
+            {
+            }
+            column(SubcontractorNo; SubcontractorNo)
             {
             }
             column(CompanyPic; CompanyInfo.Picture)
@@ -72,7 +81,6 @@ report 50100 "Labor Subcontractor Report"
             column(Posted_Purchase_Invoice_No_; "Posted Purchase Invoice No.")
             {
             }
-            //...................Additions......................................//
             column(Prev__Billed_Cum__Advance_Amt_; "Prev. Billed Cum. Advance Amt.")
             {
             }
@@ -85,9 +93,6 @@ report 50100 "Labor Subcontractor Report"
             column(Reason_for_Other_Additions; "Reason for Other Additions")
             {
             }
-            //...................Additions......................................//
-
-            //...................Deductions......................................//
             column(Billed_Cum__Adv__Deduct_Amt_; "Billed Cum. Adv. Deduct Amt.")
             {
             }
@@ -106,8 +111,53 @@ report 50100 "Labor Subcontractor Report"
             column(Other_Deductions; "Other Deductions")
             {
             }
-            //...................Deductions......................................//
-            //...Chnages Done.....
+            column(Total_Bill_Consumption_Amount; "Total Bill Consumption Amount")
+            {
+            }
+            column(BillMaterDeduDescription; BillMaterDeduDescription)
+            {
+
+            }
+            column(BillMaterDeduAmount; BillMaterDeduAmount)
+            {
+
+            }
+            dataitem("Labor SC Bill Line"; "Labor SC Bill Line")
+            {
+                DataItemLink = "Bill No." = field("No.");
+                column(Description_LaborSCBillLine; Description)
+                {
+
+                }
+                column(Cumulative_Amount_LaborSCBillLine; "Cumulative Amount")
+                {
+
+                }
+                column(Amount_for_this_Bill; "Amount for this Bill")
+                {
+
+                }
+            }
+            trigger OnAfterGetRecord()
+            var
+                myInt: Integer;
+            begin
+                if LabourSubcontractorHeader.FindFirst() then begin
+                    JobSubcontractor.Reset();
+                    JobSubcontractor.SetRange("No.", LabourSubcontractorHeader."Subcontractor Card No.");
+                    if JobSubcontractor.FindSet() then begin
+                        JobSubContractorDescription := JobSubcontractor."Job Description";
+                        ContractDescription := JobSubcontractor.Description;
+                        SubcontractorNo := JobSubcontractor."Subcontractor No.";
+                    end;
+                    BillMaterialDeduction.Reset();
+                    BillMaterialDeduction.SetRange("Bill No.", LabourSubcontractorHeader."No.");
+                    if BillMaterialDeduction.FindSet() then begin
+                        BillMaterDeduDescription := BillMaterialDeduction.Description;
+                        BillMaterDeduAmount := BillMaterialDeduction.Amount;
+                    end;
+                end;
+            end;
         }
     }
 
@@ -141,7 +191,7 @@ report 50100 "Labor Subcontractor Report"
         layout(LayoutName)
         {
             Type = RDLC;
-            LayoutFile = 'LaborSubcontractorBill.rdlc';
+            LayoutFile = 'LaborSubcontractorBill1.rdlc';
         }
     }
     trigger OnPreReport()
@@ -151,9 +201,16 @@ report 50100 "Labor Subcontractor Report"
     end;
 
     var
-        myInt: Integer;
         Date: Date;
         CompanyInfo: Record "Company Information";
         ReportTitel: Label 'Labor Subcontractor Bill';
-
+        LabourSubcontractorHeader: Record "Labor SC Bill Header";
+        LabourSubcontractorLine: Record "Labor SC Bill Line";
+        JobSubcontractor: Record "Job Subcontractor";
+        BillMaterialDeduction: Record "Bill Material Deduction";
+        JobSubContractorDescription: Text[100];
+        ContractDescription: Text[100];
+        SubcontractorNo: Code[20];
+        BillMaterDeduDescription: Text[100];
+        BillMaterDeduAmount: Decimal;
 }
